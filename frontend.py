@@ -1,7 +1,9 @@
 import os
-from flask import Flask, render_template, request, flash, redirect, url_for, send_from_directory
 import pandas as pd
+from flask import Flask, render_template, request, flash, redirect, url_for, send_from_directory
 from werkzeug.utils import secure_filename
+from sklearn.preprocessing import LabelEncoder
+from joblib import load
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'csv'}
@@ -29,7 +31,15 @@ def main_page(name=None):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             df=pd.read_csv(filename)
-            print(df)
+
+            # print(df)
+            # label encoding
+            for col in df.columns:
+                df[col] = LabelEncoder().fit_transform(df[col])
+
+            clf = load('filename.joblib')
+            prediction = clf.predict(df)
+            print("Prediction:", prediction)
             return redirect(url_for('download_file', name=filename))
     return render_template('index.html', name=name)
 @app.route('/uploads/<name>')
