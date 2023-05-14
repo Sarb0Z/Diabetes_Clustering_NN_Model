@@ -29,17 +29,15 @@ def main_page(name=None):
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
+            df=pd.read_csv(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            print(df)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            df=pd.read_csv(filename)
 
-            # print(df)
-            # label encoding
-            for col in df.columns:
-                df[col] = LabelEncoder().fit_transform(df[col])
 
-            clf = load('filename.joblib')
-            prediction = clf.predict(df)
-            print("Prediction:", prediction)
+            clf = load(os.path.join(app.config['UPLOAD_FOLDER'], 'model.joblib'))
+            # prediction = clf.predict(df)
+            # print("Prediction:", prediction)
             return redirect(url_for('download_file', name=filename))
     return render_template('index.html', name=name)
 @app.route('/uploads/<name>')
